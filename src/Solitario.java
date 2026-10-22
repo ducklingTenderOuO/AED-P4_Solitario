@@ -1,7 +1,3 @@
-/**
- * Clase Solitario (Eight Off) que inicializa el mazo, reparte las cartas
- * en las estructuras de ListaSimple e imprime el tablero en formato consola.
- */
 public class Solitario {
     private Mazo mazo;
     private ListaSimple<FoundationDeck> foundations;
@@ -19,18 +15,12 @@ public class Solitario {
         inicializarCeldasLibres();
     }
 
-    /**
-     * Crea las 4 fundaciones (una para cada palo).
-     */
     private void inicializarFoundations() {
         for (Palo palo : Palo.values()) {
             foundations.insertaFin(new FoundationDeck(palo));
         }
     }
 
-    /**
-     * Crea las 8 columnas del tablero (Tableaux) y reparte 6 cartas en cada una (48 cartas).
-     */
     private void inicializarTableaux() {
         for (int i = 0; i < 8; i++) {
             TableauDeck columna = new TableauDeck();
@@ -41,10 +31,6 @@ public class Solitario {
         }
     }
 
-    /**
-     * Crea las 8 celdas libres (Free Cells); coloca las 4 cartas restantes del mazo
-     * en las primeras 4 celdas y deja las otras 4 vacías.
-     */
     private void inicializarCeldasLibres() {
         for (int i = 0; i < 8; i++) {
             CeldaLibre celda = new CeldaLibre();
@@ -53,6 +39,138 @@ public class Solitario {
             }
             celdasLibres.insertaFin(celda);
         }
+    }
+
+    /**
+     * cuantas de las 8 celdas libres de arriba están vacias?
+     */
+    public int contarCeldasLibresVacias() {
+        int vacias = 0;
+        Nodo<CeldaLibre> r = celdasLibres.getInicio();
+        while (r != null) {
+            if (r.getInfo().estaVacia()) {
+                vacias++;
+            }
+            r = r.getSig();
+        }
+        return vacias;
+    }
+
+    /**
+     * Mueve la ultima carta de una columna (1-8) a su fundacion
+     */
+    public boolean moverTableauAFoundation(int numColumna) {
+        if (numColumna < 1 || numColumna > 8) {
+            return false;
+        }
+        TableauDeck origen = tableaux.obtenerEnPosicion(numColumna - 1);
+        if (origen == null || origen.estaVacio()) {
+            return false;
+        }
+        Carta carta = origen.verUltimaCarta();
+        FoundationDeck destino = foundations.obtenerEnPosicion(carta.getPalo().ordinal());
+        if (destino != null && destino.agregarCarta(carta)) {
+            origen.removerUltimaCarta();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Mueve la carta de una celda libre (1-8) a su fundacion
+     */
+    public boolean moverCeldaLibreAFoundation(int numCelda) {
+        if (numCelda < 1 || numCelda > 8) {
+            return false;
+        }
+        CeldaLibre origen = celdasLibres.obtenerEnPosicion(numCelda - 1);
+        if (origen == null || origen.estaVacia()) {
+            return false;
+        }
+        Carta carta = origen.verCarta();
+        FoundationDeck destino = foundations.obtenerEnPosicion(carta.getPalo().ordinal());
+        if (destino != null && destino.agregarCarta(carta)) {
+            origen.retirarCarta();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Mueve la ultima carta de una columna (1-8) a una celda libre vacia (1-8)
+     */
+    public boolean moverTableauACeldaLibre(int numColumna, int numCelda) {
+        if (numColumna < 1 || numColumna > 8 || numCelda < 1 || numCelda > 8) {
+            return false;
+        }
+        TableauDeck origen = tableaux.obtenerEnPosicion(numColumna - 1);
+        CeldaLibre destino = celdasLibres.obtenerEnPosicion(numCelda - 1);
+        if (origen == null || origen.estaVacio() || destino == null || !destino.estaVacia()) {
+            return false;
+        }
+        Carta carta = origen.removerUltimaCarta();
+        destino.colocarCarta(carta);
+        return true;
+    }
+
+    /**
+     * Mueve la carta de una celda libre (1-8) al final de una columna (1-8)
+     * */
+    public boolean moverCeldaLibreATableau(int numCelda, int numColumna) {
+        if (numCelda < 1 || numCelda > 8 || numColumna < 1 || numColumna > 8) {
+            return false;
+        }
+        CeldaLibre origen = celdasLibres.obtenerEnPosicion(numCelda - 1);
+        TableauDeck destino = tableaux.obtenerEnPosicion(numColumna - 1);
+        if (origen == null || origen.estaVacia() || destino == null) {
+            return false;
+        }
+        Carta carta = origen.verCarta();
+        if (destino.agregarCarta(carta)) {
+            origen.retirarCarta();
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Mueve una carta o un bloque de cartas en secuencia descendente del mismo palo
+     * de una columna origen (1-8) a una columna destino (1-8).
+     * El tamaño máximo del bloque depende de (1 + celdas libres vacías).
+     */
+    public boolean moverTableauATableau(int colOrigen, int colDestino) {
+        if (colOrigen < 1 || colOrigen > 8 || colDestino < 1 || colDestino > 8 || colOrigen == colDestino) {
+            return false;
+        }
+        TableauDeck origen = tableaux.obtenerEnPosicion(colOrigen - 1);
+        TableauDeck destino = tableaux.obtenerEnPosicion(colDestino - 1);
+        if (origen == null || destino == null || origen.estaVacio()) {
+            return false;
+        }
+
+        int maxCartas = 1 + contarCeldasLibresVacias();
+        int cantidadAMover = origen.calcularCantidadMovibleHacia(destino, maxCartas);
+        if (cantidadAMover > 0) {
+            ListaSimple<Carta> bloque = origen.extraerBloqueFinal(cantidadAMover);
+            destino.agregarBloque(bloque);
+            return true;
+        }
+        return false;
+    }
+
+    /**
+     * Determina si el jugador ha ganado el juego (las 4 fundaciones tienen el Rey = 13).
+     */
+    public boolean isGameOver() {
+        Nodo<FoundationDeck> r = foundations.getInicio();
+        while (r != null) {
+            FoundationDeck base = r.getInfo();
+            if (base.estaVacio() || base.verUltimaCarta().getValor() != 13) {
+                return false;
+            }
+            r = r.getSig();
+        }
+        return true;
     }
 
     @Override
@@ -72,7 +190,8 @@ public class Solitario {
         sb.append("\n\n");
 
         // Imprimir las 8 Celdas Libres (Reservas)
-        sb.append("EIGHT OFF (Celdas Libres 1-8):\n  ");
+        sb.append("EIGHT OFF (Celdas Libres 1-8) [Máx bloque movible: ")
+          .append(1 + contarCeldasLibresVacias()).append("]:\n  ");
         Nodo<CeldaLibre> nodoCelda = celdasLibres.getInicio();
         int numCelda = 1;
         while (nodoCelda != null) {
@@ -93,10 +212,5 @@ public class Solitario {
         }
         sb.append("==================================================================");
         return sb.toString();
-    }
-
-    public static void main(String[] args) {
-        Solitario juego = new Solitario();
-        System.out.println(juego);
     }
 }
