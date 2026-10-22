@@ -1,8 +1,3 @@
-/**
- * Representa una carta de la baraja inglesa.
- * Implementa Comparable para identificar qué carta es mayor
- * de acuerdo a los rangos e importando el palo de la carta.
- */
 public class Carta implements Comparable<Carta> {
     private int valor;
     private Palo palo;
@@ -36,10 +31,6 @@ public class Carta implements Comparable<Carta> {
         return color;
     }
 
-    /**
-     * Compara dos cartas por su rango (valor) y, en caso de empate,
-     * por el peso de su palo (Trébol < Diamante < Corazón < Pica).
-     */
     @Override
     public int compareTo(Carta o) {
         if (this.valorBajo == o.valorBajo) {

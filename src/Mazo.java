@@ -1,8 +1,5 @@
 import java.util.Random;
 
-/**
- * Modela la baraja de 52 cartas implementada como una Lista Circular Doble.
- */
 public class Mazo {
     private ListaCircularDoble<Carta> cartas;
 
@@ -12,9 +9,6 @@ public class Mazo {
         mezclar();
     }
 
-    /**
-     * Llena la baraja con las 52 cartas (del As al Rey para cada uno de los 4 palos).
-     */
     private void llenar() {
         for (Palo palo : Palo.values()) {
             cartas.insertaFin(new Carta(14, palo, palo.getColor()));
@@ -24,9 +18,6 @@ public class Mazo {
         }
     }
 
-    /**
-     * Mezcla las cartas de la ListaCircularDoble extrayendo posiciones aleatorias.
-     */
     public void mezclar() {
         ListaCircularDoble<Carta> mazoMezclado = new ListaCircularDoble<>();
         Random random = new Random();
@@ -42,7 +33,7 @@ public class Mazo {
     }
 
     /**
-     * Ordena las cartas de la ListaCircularDoble utilizando el compareTo de Carta.
+     * Ordenar compareTo
      */
     public void ordenar() {
         if (cartas.estaVacia()) {
@@ -61,6 +52,13 @@ public class Mazo {
             }
             actual = actual.getSig();
         } while (actual != cartas.getInicio());
+    }
+
+    public Carta obtenerUnaCarta() {
+        if (!cartas.estaVacia()) {
+            return cartas.eliminaInicio();
+        }
+        return null;
     }
 
     public int getTamano() {
