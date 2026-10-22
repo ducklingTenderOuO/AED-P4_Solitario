@@ -13,6 +13,32 @@ public class ListaSimple<T> {
         return inicio;
     }
 
+    public int getTamano() {
+        int contador = 0;
+        Nodo<T> r = inicio;
+        while (r != null) {
+            contador++;
+            r = r.getSig();
+        }
+        return contador;
+    }
+
+    public T obtenerEnPosicion(int posicion) {
+        if (posicion < 0) {
+            return null;
+        }
+        Nodo<T> r = inicio;
+        int i = 0;
+        while (r != null) {
+            if (i == posicion) {
+                return r.getInfo();
+            }
+            r = r.getSig();
+            i++;
+        }
+        return null;
+    }
+
     public T verFin() {
         if (inicio == null) {
             return null;

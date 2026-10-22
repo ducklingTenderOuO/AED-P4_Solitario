@@ -93,10 +93,6 @@ public class ListaCircularDoble<T> {
         return datoEliminado;
     }
 
-    /**
-     * Elimina y devuelve el elemento en la posición indicada (0 a tamano - 1).
-     * Aprovecha los enlaces dobles y circulares de la lista.
-     */
     public T eliminaEnPosicion(int posicion) {
         if (inicio == null || posicion < 0) {
             return null;

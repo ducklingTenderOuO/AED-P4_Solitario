@@ -15,6 +15,17 @@ public class Carta implements Comparable<Carta> {
         }
     }
 
+    public boolean tieneElMismoPalo(Palo palo) {
+        return this.palo.equals(palo);
+    }
+
+    public boolean esSecuenciaDescendenteMismoPalo(Carta cartaMenor) {
+        if (cartaMenor == null) {
+            return false;
+        }
+        return this.palo.equals(cartaMenor.palo) && this.valorBajo == cartaMenor.valorBajo + 1;
+    }
+
     public int getValor() {
         return valor;
     }
@@ -31,6 +42,9 @@ public class Carta implements Comparable<Carta> {
         return color;
     }
 
+    /**
+     * Compara o x el peso de su palo (trebol < diamante < corazon < pica)
+     */
     @Override
     public int compareTo(Carta o) {
         if (this.valorBajo == o.valorBajo) {
