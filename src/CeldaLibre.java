@@ -5,12 +5,26 @@ public class CeldaLibre {
         this.carta = null;
     }
 
-    public void colocarCarta(Carta carta) {
-        this.carta = carta;
-    }
-
     public boolean estaVacia() {
         return carta == null;
+    }
+
+    public Carta verCarta() {
+        return carta;
+    }
+
+    public boolean colocarCarta(Carta nuevaCarta) {
+        if (estaVacia() && nuevaCarta != null) {
+            this.carta = nuevaCarta;
+            return true;
+        }
+        return false;
+    }
+
+    public Carta retirarCarta() {
+        Carta temporal = this.carta;
+        this.carta = null;
+        return temporal;
     }
 
     @Override
