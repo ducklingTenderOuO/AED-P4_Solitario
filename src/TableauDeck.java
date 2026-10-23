@@ -51,40 +51,23 @@ public class TableauDeck {
      * secuencia descendente del mismo palo
      * Devuelve 0 si no existe ningun bloque valido que embone con el destino
      */
-    public int calcularCantidadMovibleHacia(TableauDeck destino, int maxCartasPermitidas) {
+    public boolean sePuedeMoverBloqueHacia(TableauDeck destino, int cantidad, int maxCartasPermitidas) {
         int total = cartas.getTamano();
-        if (total == 0 || maxCartasPermitidas <= 0) {
-            return 0;
+        if (cantidad <= 0 || cantidad > total || cantidad > maxCartasPermitidas) {
+            return false;
         }
 
-        // Probamos bloques desde tamaño 1 (solo la última carta) hasta maxCartasPermitidas
-        int limite = Math.min(total, maxCartasPermitidas);
-        for (int cantidad = 1; cantidad <= limite; cantidad++) {
-            int indiceInicio = total - cantidad;
-            Carta primeraDelBloque = cartas.obtenerEnPosicion(indiceInicio);
-
-            // Verificar que desde indiceInicio hasta el final formen escalera descendente del mismo palo
-            boolean escaleraValida = true;
-            for (int i = indiceInicio; i < total - 1; i++) {
-                Carta actual = cartas.obtenerEnPosicion(i);
-                Carta siguiente = cartas.obtenerEnPosicion(i + 1);
-                if (!actual.esSecuenciaDescendenteMismoPalo(siguiente)) {
-                    escaleraValida = false;
-                    break;
-                }
-            }
-
-            if (!escaleraValida) {
-                // Si al incluir una carta más arriba ya se rompió la secuencia, bloques más grandes tampoco serán válidos
-                break;
-            }
-
-            // Si la primera carta del bloque puede colocarse en el destino, encontramos el bloque exacto
-            if (destino.sePuedeAgregarCarta(primeraDelBloque)) {
-                return cantidad;
+        int indiceInicio = total - cantidad;
+        for (int i = indiceInicio; i < total - 1; i++) {
+            Carta actual = cartas.obtenerEnPosicion(i);
+            Carta siguiente = cartas.obtenerEnPosicion(i + 1);
+            if (!actual.esSecuenciaDescendenteMismoPalo(siguiente)) {
+                return false;
             }
         }
-        return 0;
+
+        Carta primeraDelBloque = cartas.obtenerEnPosicion(indiceInicio);
+        return destino.sePuedeAgregarCarta(primeraDelBloque);
     }
 
     /**

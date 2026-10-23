@@ -15,6 +15,13 @@ public class FoundationDeck {
         return cartas.verFin();
     }
 
+    public Carta removerUltimaCarta() {
+        if (cartas.estaVacia()) {
+            return null;
+        }
+        return cartas.eliminaFin();
+    }
+
     public boolean sePuedeAgregarCarta(Carta carta) {
         if (carta == null || !carta.tieneElMismoPalo(palo)) {
             return false;
