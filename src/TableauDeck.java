@@ -13,6 +13,10 @@ public class TableauDeck {
         return cartas.estaVacia();
     }
 
+    public int getTamano() {
+        return cartas.getTamano();
+    }
+
     public Carta verUltimaCarta() {
         return cartas.verFin();
     }

@@ -211,6 +211,83 @@ public class Solitario {
         return true;
     }
 
+    public String obtenerPista() {
+        for (int i = 1; i <= 8; i++) {
+            TableauDeck col = tableaux.obtenerEnPosicion(i - 1);
+            if (!col.estaVacio()) {
+                Carta c = col.verUltimaCarta();
+                FoundationDeck base = foundations.obtenerEnPosicion(c.getPalo().ordinal());
+                if (base.sePuedeAgregarCarta(c)) {
+                    return "Mover " + c + " de la Columna " + i + " a su Fundación.";
+                }
+            }
+        }
+
+        for (int i = 1; i <= 8; i++) {
+            CeldaLibre celda = celdasLibres.obtenerEnPosicion(i - 1);
+            if (!celda.estaVacia()) {
+                Carta c = celda.verCarta();
+                FoundationDeck base = foundations.obtenerEnPosicion(c.getPalo().ordinal());
+                if (base.sePuedeAgregarCarta(c)) {
+                    return "Mover " + c + " de la Celda Libre " + i + " a su Fundación.";
+                }
+            }
+        }
+
+        for (int i = 1; i <= 8; i++) {
+            CeldaLibre celda = celdasLibres.obtenerEnPosicion(i - 1);
+            if (!celda.estaVacia()) {
+                Carta c = celda.verCarta();
+                for (int j = 1; j <= 8; j++) {
+                    TableauDeck destino = tableaux.obtenerEnPosicion(j - 1);
+                    if (destino.sePuedeAgregarCarta(c)) {
+                        return "Mover " + c + " de la Celda Libre " + i + " a la Columna " + j + ".";
+                    }
+                }
+            }
+        }
+
+        int maxCartas = 1 + contarCeldasLibresVacias();
+        for (int i = 1; i <= 8; i++) {
+            TableauDeck origen = tableaux.obtenerEnPosicion(i - 1);
+            if (!origen.estaVacio()) {
+                int limite = Math.min(origen.getTamano(), maxCartas);
+                for (int j = 1; j <= 8; j++) {
+                    if (i == j) {
+                        continue;
+                    }
+                    TableauDeck destino = tableaux.obtenerEnPosicion(j - 1);
+                    for (int cant = 1; cant <= limite; cant++) {
+                        if (destino.estaVacio() && cant == origen.getTamano()) {
+                            continue;
+                        }
+                        if (origen.sePuedeMoverBloqueHacia(destino, cant, maxCartas)) {
+                            return "Mover " + cant + " carta(s) de la Columna " + i + " a la Columna " + j + ".";
+                        }
+                    }
+                }
+            }
+        }
+
+        for (int j = 1; j <= 8; j++) {
+            CeldaLibre celda = celdasLibres.obtenerEnPosicion(j - 1);
+            if (celda.estaVacia()) {
+                for (int i = 1; i <= 8; i++) {
+                    TableauDeck origen = tableaux.obtenerEnPosicion(i - 1);
+                    if (!origen.estaVacio()) {
+                        return "Mover " + origen.verUltimaCarta() + " de la Columna " + i + " a la Celda Libre " + j + ".";
+                    }
+                }
+            }
+        }
+
+        return null;
+    }
+
+    public boolean hayMovimientosDisponibles() {
+        return obtenerPista() != null;
+    }
+
     /**
      * Determina si el jugador ha ganado el juego (las 4 fundaciones tienen el Rey = 13).
      */
