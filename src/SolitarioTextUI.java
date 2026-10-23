@@ -15,7 +15,7 @@ public class SolitarioTextUI {
         System.out.print("¿Qué operación quieres hacer?: ");
         String op = sc.nextLine().trim().toUpperCase();
 
-        while (!op.equals("X") && !solitario.isGameOver()) {
+        while (!op.equals("X") && !solitario.isGameOver() && solitario.hayMovimientosDisponibles()) {
             boolean exito = false;
             switch (op) {
                 case "A" -> {
@@ -54,11 +54,19 @@ public class SolitarioTextUI {
                         System.out.println(">> No hay movimientos para deshacer.");
                     }
                 }
+                case "G" -> {
+                    String pista = solitario.obtenerPista();
+                    if (pista != null) {
+                        System.out.println(">> PISTA: " + pista);
+                    } else {
+                        System.out.println(">> No hay movimientos disponibles.");
+                    }
+                }
                 default -> System.out.println(">> Operación desconocida.");
             }
 
             System.out.println(solitario);
-            if (!solitario.isGameOver()) {
+            if (!solitario.isGameOver() && solitario.hayMovimientosDisponibles()) {
                 menu();
                 System.out.print("¿Qué operación quieres hacer?: ");
                 op = sc.nextLine().trim().toUpperCase();
@@ -67,6 +75,8 @@ public class SolitarioTextUI {
 
         if (solitario.isGameOver()) {
             System.out.println("¡FELICIDADES! Has completado todas las fundaciones. GAME OVER.");
+        } else if (!solitario.hayMovimientosDisponibles()) {
+            System.out.println("¡AVISO! Ya no es posible realizar más movimientos. GAME OVER.");
         } else {
             System.out.println("Juego finalizado por el usuario.");
         }
@@ -80,6 +90,7 @@ public class SolitarioTextUI {
         System.out.println("  D) Mover de Celda Libre (Eight Off) a Fundación (Base)");
         System.out.println("  E) Mover de Celda Libre (Eight Off) a Columna (Tableau)");
         System.out.println("  F) Deshacer último movimiento (Undo)");
+        System.out.println("  G) Pedir una pista");
         System.out.println("  X) Salir");
     }
 
