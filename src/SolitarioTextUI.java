@@ -32,7 +32,8 @@ public class SolitarioTextUI {
                 case "C" -> {
                     int colOrigen = pedirNumero("Escribe el número de Columna origen (1-8): ");
                     int colDestino = pedirNumero("Escribe el número de Columna destino (1-8): ");
-                    exito = solitario.moverTableauATableau(colOrigen, colDestino);
+                    int cantidad = pedirNumero("Escribe la cantidad de cartas a mover (máx " + (1 + solitario.contarCeldasLibresVacias()) + "): ");
+                    exito = solitario.moverTableauATableau(colOrigen, colDestino, cantidad);
                     mostrarResultado(exito);
                 }
                 case "D" -> {
@@ -45,6 +46,13 @@ public class SolitarioTextUI {
                     int col = pedirNumero("Escribe el número de Columna (1-8) donde se colocará: ");
                     exito = solitario.moverCeldaLibreATableau(celda, col);
                     mostrarResultado(exito);
+                }
+                case "F" -> {
+                    if (solitario.deshacer()) {
+                        System.out.println(">> Último movimiento deshecho.");
+                    } else {
+                        System.out.println(">> No hay movimientos para deshacer.");
+                    }
                 }
                 default -> System.out.println(">> Operación desconocida.");
             }
@@ -71,6 +79,7 @@ public class SolitarioTextUI {
         System.out.println("  C) Mover de Columna (Tableau) a Columna (Tableau)");
         System.out.println("  D) Mover de Celda Libre (Eight Off) a Fundación (Base)");
         System.out.println("  E) Mover de Celda Libre (Eight Off) a Columna (Tableau)");
+        System.out.println("  F) Deshacer último movimiento (Undo)");
         System.out.println("  X) Salir");
     }
 

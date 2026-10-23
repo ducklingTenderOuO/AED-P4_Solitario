@@ -3,12 +3,14 @@ public class Solitario {
     private ListaSimple<FoundationDeck> foundations;
     private ListaSimple<CeldaLibre> celdasLibres;
     private ListaSimple<TableauDeck> tableaux;
+    private ListaSimple<Movimiento> historialUndo;
 
     public Solitario() {
         mazo = new Mazo();
         foundations = new ListaSimple<>();
         celdasLibres = new ListaSimple<>();
         tableaux = new ListaSimple<>();
+        historialUndo = new ListaSimple<>();
 
         inicializarFoundations();
         inicializarTableaux();
@@ -68,9 +70,12 @@ public class Solitario {
             return false;
         }
         Carta carta = origen.verUltimaCarta();
-        FoundationDeck destino = foundations.obtenerEnPosicion(carta.getPalo().ordinal());
+        int indiceFoundation = carta.getPalo().ordinal();
+        FoundationDeck destino = foundations.obtenerEnPosicion(indiceFoundation);
         if (destino != null && destino.agregarCarta(carta)) {
             origen.removerUltimaCarta();
+            historialUndo.insertaFin(new Movimiento(
+                    Movimiento.TipoMovimiento.TABLEAU_A_FOUNDATION, numColumna - 1, indiceFoundation, 1));
             return true;
         }
         return false;
@@ -88,9 +93,12 @@ public class Solitario {
             return false;
         }
         Carta carta = origen.verCarta();
-        FoundationDeck destino = foundations.obtenerEnPosicion(carta.getPalo().ordinal());
+        int indiceFoundation = carta.getPalo().ordinal();
+        FoundationDeck destino = foundations.obtenerEnPosicion(indiceFoundation);
         if (destino != null && destino.agregarCarta(carta)) {
             origen.retirarCarta();
+            historialUndo.insertaFin(new Movimiento(
+                    Movimiento.TipoMovimiento.CELDA_A_FOUNDATION, numCelda - 1, indiceFoundation, 1));
             return true;
         }
         return false;
@@ -110,6 +118,8 @@ public class Solitario {
         }
         Carta carta = origen.removerUltimaCarta();
         destino.colocarCarta(carta);
+        historialUndo.insertaFin(new Movimiento(
+                Movimiento.TipoMovimiento.TABLEAU_A_CELDA, numColumna - 1, numCelda - 1, 1));
         return true;
     }
 
@@ -128,6 +138,8 @@ public class Solitario {
         Carta carta = origen.verCarta();
         if (destino.agregarCarta(carta)) {
             origen.retirarCarta();
+            historialUndo.insertaFin(new Movimiento(
+                    Movimiento.TipoMovimiento.CELDA_A_TABLEAU, numCelda - 1, numColumna - 1, 1));
             return true;
         }
         return false;
@@ -138,7 +150,7 @@ public class Solitario {
      * de una columna origen (1-8) a una columna destino (1-8).
      * El tamaño máximo del bloque depende de (1 + celdas libres vacías).
      */
-    public boolean moverTableauATableau(int colOrigen, int colDestino) {
+    public boolean moverTableauATableau(int colOrigen, int colDestino, int cantidadCartas) {
         if (colOrigen < 1 || colOrigen > 8 || colDestino < 1 || colDestino > 8 || colOrigen == colDestino) {
             return false;
         }
@@ -149,13 +161,54 @@ public class Solitario {
         }
 
         int maxCartas = 1 + contarCeldasLibresVacias();
-        int cantidadAMover = origen.calcularCantidadMovibleHacia(destino, maxCartas);
-        if (cantidadAMover > 0) {
-            ListaSimple<Carta> bloque = origen.extraerBloqueFinal(cantidadAMover);
+        if (origen.sePuedeMoverBloqueHacia(destino, cantidadCartas, maxCartas)) {
+            ListaSimple<Carta> bloque = origen.extraerBloqueFinal(cantidadCartas);
             destino.agregarBloque(bloque);
+            historialUndo.insertaFin(new Movimiento(
+                    Movimiento.TipoMovimiento.TABLEAU_A_TABLEAU, colOrigen - 1, colDestino - 1, cantidadCartas));
             return true;
         }
         return false;
+    }
+
+    public boolean deshacer() {
+        if (historialUndo.estaVacia()) {
+            return false;
+        }
+        Movimiento mov = historialUndo.eliminaFin();
+        switch (mov.getTipo()) {
+            case TABLEAU_A_FOUNDATION -> {
+                FoundationDeck base = foundations.obtenerEnPosicion(mov.getDestino());
+                TableauDeck columna = tableaux.obtenerEnPosicion(mov.getOrigen());
+                Carta carta = base.removerUltimaCarta();
+                columna.agregarCartaInicial(carta);
+            }
+            case TABLEAU_A_CELDA -> {
+                CeldaLibre celda = celdasLibres.obtenerEnPosicion(mov.getDestino());
+                TableauDeck columna = tableaux.obtenerEnPosicion(mov.getOrigen());
+                Carta carta = celda.retirarCarta();
+                columna.agregarCartaInicial(carta);
+            }
+            case TABLEAU_A_TABLEAU -> {
+                TableauDeck destino = tableaux.obtenerEnPosicion(mov.getDestino());
+                TableauDeck origen = tableaux.obtenerEnPosicion(mov.getOrigen());
+                ListaSimple<Carta> bloque = destino.extraerBloqueFinal(mov.getCantidadCartas());
+                origen.agregarBloque(bloque);
+            }
+            case CELDA_A_FOUNDATION -> {
+                FoundationDeck base = foundations.obtenerEnPosicion(mov.getDestino());
+                CeldaLibre celda = celdasLibres.obtenerEnPosicion(mov.getOrigen());
+                Carta carta = base.removerUltimaCarta();
+                celda.colocarCarta(carta);
+            }
+            case CELDA_A_TABLEAU -> {
+                TableauDeck columna = tableaux.obtenerEnPosicion(mov.getDestino());
+                CeldaLibre celda = celdasLibres.obtenerEnPosicion(mov.getOrigen());
+                Carta carta = columna.removerUltimaCarta();
+                celda.colocarCarta(carta);
+            }
+        }
+        return true;
     }
 
     /**
